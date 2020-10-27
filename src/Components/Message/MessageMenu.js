@@ -186,9 +186,13 @@ class MessageMenu extends React.PureComponent {
 
     handleSelect = event => {
         const { chatId, messageId, onClose } = this.props;
-
         onClose(event);
-        selectMessage(chatId, messageId, true);
+
+        const selection = window.getSelection().toString();
+        if (selection) return;
+
+        const selected = !MessageStore.selectedItems.has(`chatId=${chatId}_messageId=${messageId}`);
+        selectMessage(chatId, messageId, selected);
     };
 
     handleDelete = event => {
@@ -216,17 +220,6 @@ class MessageMenu extends React.PureComponent {
         if (!blob) return;
 
         saveBlob(blob, 'sticker.tgs');
-    };
-
-    handleSelection = event => {
-        const { chatId, messageId, onClose } = this.props;
-        onClose(event);
-
-        const selection = window.getSelection().toString();
-        if (selection) return;
-
-        const selected = !MessageStore.selectedItems.has(`chatId=${chatId}_messageId=${messageId}`);
-        selectMessage(chatId, messageId, selected);
     };
 
     render() {
@@ -269,12 +262,14 @@ class MessageMenu extends React.PureComponent {
                         {/*    </ListItemIcon>*/}
                         {/*    <ListItemText primary={t('Download')} />*/}
                         {/*</MenuItem>*/}
-                        <MenuItem onClick={this.handleSelection}>
-                            <ListItemIcon>
-                                <CheckBoxOutlinedIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={t('Select')} />
-                        </MenuItem>
+                        {canBeSelected && (
+                            <MenuItem onClick={this.handleSelect}>
+                                <ListItemIcon>
+                                    <FrameCheckIcon />
+                                </ListItemIcon>
+                                <ListItemText primary={t('Select')} />
+                            </MenuItem>
+                        )}
                         {canCopyPublicMessageLink && (
                             <MenuItem onClick={this.handleCopyPublicMessageLink}>
                                 <ListItemIcon>
@@ -316,14 +311,6 @@ class MessageMenu extends React.PureComponent {
                                         <ListItemText primary={t('PinToTop')} />
                                     </>
                                 )}
-                            </MenuItem>
-                        )}
-                        {canBeSelected && (
-                            <MenuItem onClick={this.handleSelect}>
-                                <ListItemIcon>
-                                    <FrameCheckIcon />
-                                </ListItemIcon>
-                                <ListItemText primary={t('Select')} />
                             </MenuItem>
                         )}
                         {canBeForwarded && (
